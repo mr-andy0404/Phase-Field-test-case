@@ -45,9 +45,17 @@ VlinSedShrink = alphaSedShrink * SSedShrink / k - beta;
 
 
 %begin
-r = linspace(-RInitGrow,RInitGrow,100);
+r = linspace(-RInitGrow,RInitGrow,2*RInitGrow/h);
 
 phiInit = 0.5 * (1 - tanh(r/(sqrt(8) * epi)));
 
+nabla = gradient(phiInit);
 
+lap = gradient(nabla);
 
+phi1 = zeros(1,64);
+phi1(1) = 1;
+phi1(64) = 0;
+
+for i = 2:63
+    phi1(i) = 0.01 * (phiInit(i)
