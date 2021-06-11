@@ -44,4 +44,10 @@ cSedShrink = SSedShrink / k;
 VlinSedShrink = alphaSedShrink * SSedShrink / k - beta;
 
 
+%begin
+r = linspace(-RInitGrow,RInitGrow,100);
+
+phiInit = 0.5 * (1 - tanh(r/(sqrt(8) * epi)));
+
+
 
