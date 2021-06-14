@@ -31,7 +31,7 @@ VlinVcGrow = alphaVcGrow * cVcGrow - beta;
 
 %Strain Energy Density Growth
 SSedGrow = Fz^2 / (2 * E * pi^2 * RInitGrow^4);
-cSedGrwo = SSedGrow / k;
+cSedGrow = SSedGrow / k;
 VlinSedGrow = alphaSedGrow * cSedGrow - beta;
 
 %Volumetric Compression Shrinkage
@@ -59,7 +59,7 @@ plot(r,phi(1,:));
 hold on;
 for j = 2:200
     for i = 2:63
-        phi(j,i) = phi(j-1,i) + dt * (- VlinVcGrow * abs((phi(j-1,i+1)-phi(j-1,i)) / h) + ...
+        phi(j,i) = phi(j-1,i) + dt * (- VlinVcGrow * (phi(j-1,i+1)-phi(j-1,i)) / h + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
             gamma * epi^2 * (phi(j-1,i-1) - 2 * phi(j-1,i) + phi(j-1,i+1)) / h^2);
     end
