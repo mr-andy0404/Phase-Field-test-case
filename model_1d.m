@@ -27,22 +27,22 @@ dt = 0.01;
 %Volumetric Compression Growth
 SVcGrow = (1 - 2 * v) * Fz / (E * pi * RInitGrow^2);
 cVcGrow = SVcGrow / k;
-VlinVcGrow = alphaVcGrow * SVcGrow / k - beta;
+VlinVcGrow = alphaVcGrow * cVcGrow - beta;
 
 %Strain Energy Density Growth
 SSedGrow = Fz^2 / (2 * E * pi^2 * RInitGrow^4);
 cSedGrwo = SSedGrow / k;
-VlinSedGrow = alphaSedGrow * SSedGrow / k - beta;
+VlinSedGrow = alphaSedGrow * cSedGrow - beta;
 
 %Volumetric Compression Shrinkage
 SVcShrink = (1 - 2 * v) * Fz / (E * pi * RInitShrink^2);
 cVcShrink = SVcShrink / k;
-VlinVcShrink = alphaVcShrink * SVcShrink / k - beta;
+VlinVcShrink = alphaVcShrink * cVcShrink - beta;
 
 %Strain Energy Density Shrinkage
 SSedShrink = Fz^2 / (2 * E * pi^2 * RInitShrink^4);
 cSedShrink = SSedShrink / k;
-VlinSedShrink = alphaSedShrink * SSedShrink / k - beta;
+VlinSedShrink = alphaSedShrink * cSedShrink - beta;
 
 
 %begin
@@ -60,7 +60,7 @@ plot(r,phi(1,:));
 hold on;
 for j = 2:200
     for i = 2:63
-        phi(j,i) = phi(j-1,i) + dt * (- VlinVcGrow * ((phi(j-1,i+1)-phi(j-1,i)) / h) + ...
+        phi(j,i) = phi(j-1,i) + dt * (- VlinVcGrow * abs((phi(j-1,i+1)-phi(j-1,i)) / h) + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
             gamma * epi^2 * (phi(j-1,i-1) - 2 * phi(j-1,i) + phi(j-1,i+1)) / h^2);
     end
