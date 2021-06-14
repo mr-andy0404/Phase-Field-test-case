@@ -45,16 +45,15 @@ cSedShrink = SSedShrink / k;
 VlinSedShrink = alphaSedShrink * cSedShrink - beta;
 
 
-%begin
+%1d Growth - Volumetric Compression
+
 r = linspace(-RInitGrow,RInitGrow,2*RInitGrow/h);
 
 phi = zeros(200,64);
 phi(:,1) = 1;
 phi(:,64) = 0;
 
-phiInit = 0.5 * (1 - tanh(r/(sqrt(8) * epi)));
-
-phi(1,:) = phiInit;
+phi(1,:) = 0.5 * (1 - tanh(r/(sqrt(8) * epi)));
 
 plot(r,phi(1,:));
 hold on;
@@ -71,7 +70,7 @@ for j = 2:200
 end
 
 
-
+%%% Sharp interface method, phi form -1 to 1
 % phi2 = -tanh(r/sqrt(2)/epi);
 % plot(r,phi2);
 % hold on;
