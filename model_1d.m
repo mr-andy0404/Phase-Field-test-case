@@ -1,9 +1,10 @@
-%parameters
+%% parameters
 E = 1;      %Young's modulus
 v = 0.33;   %Poisson ratio
 
 RInitGrow = sqrt(0.2/pi);
 RInitShrink = sqrt(0.6/pi);
+r = linspace(-RInitGrow,RInitGrow,2*RInitGrow/h);
 
 alphaSedGrow = 0.36;
 alphaVcGrow = 0.9;
@@ -45,9 +46,8 @@ cSedShrink = SSedShrink / k;
 VlinSedShrink = alphaSedShrink * cSedShrink - beta;
 
 
-%1d Growth - Volumetric Compression
-
-r = linspace(-RInitGrow,RInitGrow,2*RInitGrow/h);
+%% 1d Growth - Volumetric Compression
+%%% not working
 
 % phi = zeros(200,64);
 % phi(:,1) = 1;
@@ -57,8 +57,8 @@ r = linspace(-RInitGrow,RInitGrow,2*RInitGrow/h);
 % f = zeros(200,64);
 
 %VlinVcGrow=1;
-plot(r,phi(1,:));
-hold on;
+% plot(r,phi(1,:));
+% hold on;
 
 % for j = 2:200
 %     for i = 2:63
@@ -68,23 +68,49 @@ hold on;
 %             gamma * epi^2 * (phi(j-1,i-1) - 2 * phi(j-1,i) + phi(j-1,i+1)) / h^2);
 %         
 %        
-%     end
+%     endnablaPhi = zeros(1,64);
 % %     if mod(j,5) == 0
 % %         plot(r,phi(j,:));
 % %     end
 %     
 % end
 
+%% Working with funtions in SOLIDIFICATION
 
-%%% Sharp interface method, phi form -1 to 1
-phi2 = -tanh(r/sqrt(2)/epi);
-plot(r,phi2);
-hold on;
 phi = zeros(200,64);
 phi(:,1) = 1;
 phi(:,64) = 0;
-for i = 2 : 63
-    phi1(i) = phiInit(i) + dt * (gamma * epi^2 * (phiInit(i-1) -2 * phiInit(i) + phiInit(i+1)) / h^2 + ...
-        gamma * phiInit(i) * (1 - phiInit(i)^2) - VlinSedGrow * abs(phiInit(i+1) - phiInit(i)) / h);
+
+phi(1,:) = (1 -tanh(r/2/epi))/2;
+plot(r,phi(1,:));
+hold on;
+
+for j = 1 : 199
+    for i = 2 : 63
+        phi(j+1,i) = phi(j,i) + dt * (-VlinVcGrow * (-phi(j,i) * (1 - phi(j,i)) / epi) + ...
+            gamma * epi^2 * ((phi(j,i-1) - 2 * phi(j,i) + phi(j,i+1)) / h^2 + ...
+            phi(j,i) * (1 - phi(j,i)) * (1 - 2 * phi(j,i)) / epi^2 ));
+    end
 end
-plot(r,phi1);
+plot(r,phi(200,:));
+
+
+%% Testing with funtions in SHARP INTERFACE
+% Working but wrong direction
+
+% phi = zeros(200,64);
+% phi(:,1) = 1;
+% phi(:,64) = -1;
+% 
+% phi(1,:) = -tanh(r/sqrt(2)/epi);
+% plot(r,phi(1,:));
+% hold on;
+% 
+% for j = 1 : 199
+%     for i = 2 : 63
+%         phi(j+1,i) = phi(j,i) + dt * (-VlinVcGrow * (1 - phi(j,i)^2) / sqrt(2) / epi + ...
+%             gamma * epi^2 * ((phi(j,i) - phi(j,i-1))^2 / h^2 + ...
+%             phi(j,i) * (1 - phi(j,i)^2) / epi^2 ));
+%     end
+% end
+% plot(r,phi(200,:));
