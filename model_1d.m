@@ -4,7 +4,6 @@ v = 0.33;   %Poisson ratio
 
 RInitGrow = sqrt(0.2/pi);
 RInitShrink = sqrt(0.6/pi);
-r = linspace(-RInitGrow,RInitGrow,2*RInitGrow/h);
 
 alphaSedGrow = 0.36;
 alphaVcGrow = 0.9;
@@ -17,6 +16,8 @@ Fz = 1;
 d = 1;
 k = 1/2;
 h = 1/128;  %minimun gird spacing
+num = fix(2 * RInitShrink / h);
+r = linspace(0, 2 * RInitShrink, num);
 
 epi = 0.005;
 gamma = 10;
@@ -47,53 +48,53 @@ VlinSedShrink = alphaSedShrink * cSedShrink - beta;
 
 
 %% 1d Growth - Volumetric Compression
-%%% not working
+%%% working
 
-% phi = zeros(200,64);
-% phi(:,1) = 1;
-% phi(:,64) = 0;
-% 
-% phi(1,:) = 0.5 * (1 - tanh(r/(sqrt(8) * epi)));
-% f = zeros(200,64);
 
-%VlinVcGrow=1;
-% plot(r,phi(1,:));
-% hold on;
-
-% for j = 2:200
-%     for i = 2:63
-%         f(j-1,i)= 20*(-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i);
-%         phi(j,i) = phi(j-1,i) + dt * (-VlinVcGrow * abs((phi(j-1,i)-phi(j-1,i-1)) / h) + ...
-%             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
-%             gamma * epi^2 * (phi(j-1,i-1) - 2 * phi(j-1,i) + phi(j-1,i+1)) / h^2);
-%         
-%        
-%     endnablaPhi = zeros(1,64);
-% %     if mod(j,5) == 0
-% %         plot(r,phi(j,:));
-% %     end
-%     
-% end
-
-%% Working with funtions in SOLIDIFICATION
-
-phi = zeros(200,64);
+phi = zeros(20000,num);
 phi(:,1) = 1;
-phi(:,64) = 0;
+phi(:,num) = 0;
 
-phi(1,:) = (1 -tanh(r/2/epi))/2;
+phi(1,:) = 0.5 * (1 - tanh((r-RInitGrow)/(sqrt(8) * epi)));
+
 plot(r,phi(1,:));
 hold on;
 
-for j = 1 : 199
-    for i = 2 : 63
-        phi(j+1,i) = phi(j,i) + dt * (-VlinVcGrow * (-phi(j,i) * (1 - phi(j,i)) / epi) + ...
-            gamma * epi^2 * ((phi(j,i-1) - 2 * phi(j,i) + phi(j,i+1)) / h^2 + ...
-            phi(j,i) * (1 - phi(j,i)) * (1 - 2 * phi(j,i)) / epi^2 ));
+for j = 2:20000
+    for i = 2:num-1
+        phi(j,i) = phi(j-1,i) + dt * (-VlinVcGrow * (phi(j-1,i) - phi(j-1,i-1))/h + ...(-phi(j-1,i) * (1 - phi(j-1,i)) / epi) + ...
+            gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
+            gamma * epi^2 * (phi(j-1,i-1) - 2 * phi(j-1,i) + phi(j-1,i+1))/h^2);...(phi(j-1,i) - phi(j-1,i-1))^2 / h^2);    
     end
+    if mod(j,200) == 0
+        plot(r,phi(j,:));
+    end
+    
 end
-plot(r,phi(200,:));
 
+%% Working with funtions in SOLIDIFICATION
+
+% phi = zeros(20000,num);
+% phi(:,1) = 1;
+% phi(:,num) = 0;
+% 
+% phi(1,:) = (1 -tanh((r - RInitGrow)/2/epi))/2;
+% plot(r,phi(1,:));
+% hold on;
+% 
+% 
+% for j = 1 : 20000
+%     for i = 2 : num-1
+%         phi(j+1,i) = phi(j,i) + dt * (-VlinSedGrow * (-phi(j,i) * (1 - phi(j,i)) / epi) + ...
+%             gamma * epi^2 * ((phi(j,i-1) - 2 * phi(j,i) + phi(j,i+1)) / h^2 + ...
+%             phi(j,i) * (1 - phi(j,i)) * (1 - 2 * phi(j,i)) / epi^2 ));
+%     end
+%     if mod(j,200) == 0
+%         plot(r,phi(j,:));
+%     end
+% end
+% plot(r,phi(200,:));
+% 
 
 %% Testing with funtions in SHARP INTERFACE
 % Working but wrong direction
