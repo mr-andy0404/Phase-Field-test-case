@@ -20,7 +20,7 @@ h = 1/128;  %minimun gird spacing
 epi = 0.005;
 gamma = 10;
 
-dt = 0.01;
+dt = 0.0001;
 
 %variables
 
@@ -49,34 +49,42 @@ VlinSedShrink = alphaSedShrink * cSedShrink - beta;
 
 r = linspace(-RInitGrow,RInitGrow,2*RInitGrow/h);
 
-phi = zeros(200,64);
-phi(:,1) = 1;
-phi(:,64) = 0;
+% phi = zeros(200,64);
+% phi(:,1) = 1;
+% phi(:,64) = 0;
+% 
+% phi(1,:) = 0.5 * (1 - tanh(r/(sqrt(8) * epi)));
+% f = zeros(200,64);
 
-phi(1,:) = 0.5 * (1 - tanh(r/(sqrt(8) * epi)));
-
+%VlinVcGrow=1;
 plot(r,phi(1,:));
 hold on;
-for j = 2:200
-    for i = 2:63
-        phi(j,i) = phi(j-1,i) + dt * (- VlinVcGrow * (phi(j-1,i+1)-phi(j-1,i)) / h + ...
-            gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
-            gamma * epi^2 * (phi(j-1,i-1) - 2 * phi(j-1,i) + phi(j-1,i+1)) / h^2);
-    end
-%     if mod(j,5) == 0
-%         plot(r,phi(j,:));
+
+% for j = 2:200
+%     for i = 2:63
+%         f(j-1,i)= 20*(-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i);
+%         phi(j,i) = phi(j-1,i) + dt * (-VlinVcGrow * abs((phi(j-1,i)-phi(j-1,i-1)) / h) + ...
+%             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
+%             gamma * epi^2 * (phi(j-1,i-1) - 2 * phi(j-1,i) + phi(j-1,i+1)) / h^2);
+%         
+%        
 %     end
-    
-end
+% %     if mod(j,5) == 0
+% %         plot(r,phi(j,:));
+% %     end
+%     
+% end
 
 
 %%% Sharp interface method, phi form -1 to 1
-% phi2 = -tanh(r/sqrt(2)/epi);
-% plot(r,phi2);
-% hold on;
-% 
-% for i = 2 : 63
-%     phi1(i) = phiInit(i) + dt * (gamma * epi^2 * (phiInit(i-1) -2 * phiInit(i) + phiInit(i+1)) / h^2 + ...
-%         gamma * phiInit(i) * (1 - phiInit(i)^2) - VlinSedGrow * abs(phiInit(i+1) - phiInit(i)) / h);
-% end
-% plot(r,phi1);
+phi2 = -tanh(r/sqrt(2)/epi);
+plot(r,phi2);
+hold on;
+phi = zeros(200,64);
+phi(:,1) = 1;
+phi(:,64) = 0;
+for i = 2 : 63
+    phi1(i) = phiInit(i) + dt * (gamma * epi^2 * (phiInit(i-1) -2 * phiInit(i) + phiInit(i+1)) / h^2 + ...
+        gamma * phiInit(i) * (1 - phiInit(i)^2) - VlinSedGrow * abs(phiInit(i+1) - phiInit(i)) / h);
+end
+plot(r,phi1);
