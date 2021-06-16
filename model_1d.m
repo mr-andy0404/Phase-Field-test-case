@@ -48,8 +48,7 @@ VlinSedShrink = alphaSedShrink * cSedShrink - beta;
 
 
 %% 1d Growth - Volumetric Compression
-%%% working
-
+% working
 
 phi = zeros(20000,num);
 phi(:,1) = 1;
@@ -63,13 +62,13 @@ title('phi changing with time');
 xlabel('r');
 ylabel('phi');
 
-R = zeros(1,20000);
-R(1) = RInitGrow;
+RVc = zeros(1,20000);
+RVc(1) = RInitGrow;
 
 for j = 2:20000
     
-    % updating velocity
-    SVcGrow = (1 - 2 * v) * Fz / (E * pi * R(j-1)^2);
+    %%updating velocity
+    SVcGrow = (1 - 2 * v) * Fz / (E * pi * RVc(j-1)^2);
     cVcGrow = SVcGrow / k;
     VlinVcGrow = alphaVcGrow * cVcGrow - beta;
     
@@ -79,7 +78,7 @@ for j = 2:20000
             gamma * epi^2 * (phi(j-1,i) - phi(j-1,i-1))^2 / h^2);  
         
         if abs(phi(j,i) - 0.5) < abs(phi(j,i-1) - 0.5)
-            R(j) = r(i);
+            RVc(j) = r(i);
         end
     end
     
@@ -91,11 +90,65 @@ end
 
 figure(2);
 t = linspace(1,20000,20000)* dt;
-plot(t, pi * R.^2);
+plot(t, pi * RVc.^2);
 title('Volume varying with time');
 xlabel('time/s');
 ylabel('Volume');
 ylim([0.15,0.65]);
+grid on;
+hold on;
+
+
+%% 1d Growth - Strain Energy Density
+%%% working
+
+phi = zeros(20000,num);
+phi(:,1) = 1;
+phi(:,num) = 0;
+
+phi(1,:) = 0.5 * (1 - tanh((r-RInitGrow)/(sqrt(8) * epi)));
+
+figure(3);
+plot(r,phi(1,:));
+hold on;
+title('phi changing with time');
+xlabel('r');
+ylabel('phi');
+
+RSed = zeros(1,20000);
+RSed(1) = RInitGrow;
+
+for j = 2:20000
+    
+    %%updating velocity
+    SSedGrow = Fz^2 / (2 * E * pi^2 * RSed(j-1)^4);
+    cSedGrow = SSedGrow / k;
+    VlinSedGrow = alphaSedGrow * cSedGrow - beta;
+    
+    for i = 2:num-1
+        phi(j,i) = phi(j-1,i) + dt * (-VlinSedGrow * (-phi(j-1,i) * (1 - phi(j-1,i)) / epi) + ...
+            gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
+            gamma * epi^2 * (phi(j-1,i) - phi(j-1,i-1))^2 / h^2);  
+        
+        if abs(phi(j,i) - 0.5) < abs(phi(j,i-1) - 0.5)
+            RSed(j) = r(i);
+        end
+    end
+    
+    if mod(j,200) == 0
+        plot(r,phi(j,:));
+    end
+    
+end
+
+figure(2);
+t = linspace(1,20000,20000)* dt;
+plot(t, pi * RSed.^2);
+title('Volume varying with time');
+xlabel('time/s');
+ylabel('Volume');
+ylim([0.15,0.65]);
+legend('1d growth with Vc','1d growth with Sed');
 grid on;
 
 
