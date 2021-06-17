@@ -58,9 +58,9 @@ phi(1,:) = 0.5 * (1 - tanh((r-RInitGrow)/(sqrt(8) * epi)));
 
 plot(r,phi(1,:));
 hold on;
-title('phi changing with time');
+title('\phi changing with time');
 xlabel('r');
-ylabel('phi');
+ylabel('\phi');
 
 RVc = zeros(1,20000);
 RVc(1) = RInitGrow;
@@ -111,9 +111,9 @@ phi(1,:) = 0.5 * (1 - tanh((r-RInitGrow)/(sqrt(8) * epi)));
 figure(3);
 plot(r,phi(1,:));
 hold on;
-title('phi changing with time');
+title('\phi changing with time');
 xlabel('r');
-ylabel('phi');
+ylabel('\phi');
 
 RSed = zeros(1,20000);
 RSed(1) = RInitGrow;
@@ -130,10 +130,12 @@ for j = 2:20000
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
             gamma * epi^2 * (phi(j-1,i) - phi(j-1,i-1))^2 / h^2);  
         
-        if abs(phi(j,i) - 0.5) < abs(phi(j,i-1) - 0.5)
-            RSed(j) = r(i);
-        end
+%         if abs(phi(j,i) - 0.5) < abs(phi(j,i-1) - 0.5)             
+%             RSed(j) = r(i);%             
+%         end
     end
+    
+    Rsed(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
     
     if mod(j,200) == 0
         plot(r,phi(j,:));
@@ -149,7 +151,6 @@ xlabel('time/s');
 ylabel('Volume');
 ylim([0.15,0.65]);
 legend('1d growth with Vc','1d growth with Sed');
-grid on;
 
 
 %% Working with funtions in SOLIDIFICATION

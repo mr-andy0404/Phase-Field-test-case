@@ -54,13 +54,13 @@ phi = zeros(20000,num);
 phi(:,1) = 1;
 phi(:,num) = 0;
 
-phi(1,:) = 0.5 * (1 - tanh((r-RInitGrow)/(sqrt(8) * epi)));
+phi(1,:) = 0.5 * (1 - tanh((r-RInitShrink)/(sqrt(8) * epi)));%
 
 plot(r,phi(1,:));
 hold on;
-title('phi changing with time');
+title('\phi changing with time using Sed');
 xlabel('r');
-ylabel('phi');
+ylabel('\phi');
 
 R = zeros(1,20000);
 R(1) = RInitGrow;
@@ -73,14 +73,16 @@ for j = 2:20000
     VlinSedGrow = alphaSedGrow * cSedGrow - beta;
     
     for i = 2:num-1
-        phi(j,i) = phi(j-1,i) + dt * (-VlinSedGrow * (-phi(j-1,i) * (1 - phi(j-1,i)) / epi) + ...
+        phi(j,i) = phi(j-1,i) + dt * (-VlinSedGrow * abs(-2 * phi(j-1,i) * (1 - phi(j-1,i)) / epi / sqrt(8)) + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
             gamma * epi^2 * (phi(j-1,i) - phi(j-1,i-1))^2 / h^2);  
         
-        if abs(phi(j,i) - 0.5) < abs(phi(j,i-1) - 0.5)
-            R(j) = r(i);
-        end
+%         if abs(phi(j,i) - 0.5) < abs(phi(j,i-1) - 0.5)
+%             R(j) = r(i);
+%         end
     end
+    
+     R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
     
     if mod(j,200) == 0
         plot(r,phi(j,:));
@@ -91,7 +93,7 @@ end
 figure(2);
 t = linspace(1,20000,20000)* dt;
 plot(t, pi * R.^2);
-title('Volume varying with time');
+title('Volume varying with time with Sed');
 xlabel('time/s');
 ylabel('Volume');
 ylim([0.15,0.65]);

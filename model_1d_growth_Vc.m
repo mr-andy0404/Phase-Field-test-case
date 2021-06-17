@@ -58,9 +58,9 @@ phi(1,:) = 0.5 * (1 - tanh((r-RInitGrow)/(sqrt(8) * epi)));
 
 plot(r,phi(1,:));
 hold on;
-title('phi changing with time');
+title('\phi changing with time using Vc');
 xlabel('r');
-ylabel('phi');
+ylabel('\phi');
 
 R = zeros(1,20000);
 R(1) = RInitGrow;
@@ -91,7 +91,7 @@ end
 figure(2);
 t = linspace(1,20000,20000)* dt;
 plot(t, pi * R.^2);
-title('Volume varying with time');
+title('Volume varying with time using Vc');
 xlabel('time/s');
 ylabel('Volume');
 ylim([0.15,0.65]);
