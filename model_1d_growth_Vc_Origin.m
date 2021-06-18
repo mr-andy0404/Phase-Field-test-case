@@ -1,3 +1,5 @@
+clear;
+
 %% parameters
 E = 1;      %Young's modulus
 v = 0.33;   %Poisson ratio
@@ -24,7 +26,7 @@ gamma = 10;
 
 dt = 0.0001;
 
-%variables
+%% variables
 
 %Volumetric Compression Growth
 SVcGrow = (1 - 2 * v) * Fz / (E * pi * RInitGrow^2);
@@ -46,7 +48,6 @@ SSedShrink = Fz^2 / (2 * E * pi^2 * RInitShrink^4);
 cSedShrink = SSedShrink / k;
 VlinSedShrink = alphaSedShrink * cSedShrink - beta;
 
-
 %% 1d Growth - Volumetric Compression
 % working
 
@@ -54,11 +55,11 @@ phi = zeros(20000,num);
 phi(:,1) = 1;
 phi(:,num) = 0;
 
-phi(1,:) = 0.5 * (1 - tanh((r-RInitShrink)/(sqrt(8) * epi)));%
+phi(1,:) = 0.5 * (1 - tanh((r-RInitGrow)/(sqrt(8) * epi)));
 
 plot(r,phi(1,:));
 hold on;
-title('\phi changing with time using Sed');
+title('\phi changing with time using Vc');
 xlabel('r');
 ylabel('\phi');
 
@@ -68,21 +69,21 @@ R(1) = RInitGrow;
 for j = 2:20000
     
     %%updating velocity
-    SSedGrow = Fz^2 / (2 * E * pi^2 * R(j-1)^4);
-    cSedGrow = SSedGrow / k;
-    VlinSedGrow = alphaSedGrow * cSedGrow - beta;
+    SVcGrow = (1 - 2 * v) * Fz / (E * pi * R(j-1)^2);
+    cVcGrow = SVcGrow / k;
+    VlinVcGrow = alphaVcGrow * cVcGrow - beta;
     
     for i = 2:num-1
-        phi(j,i) = phi(j-1,i) + dt * (-VlinSedGrow * abs(-2 * phi(j-1,i) * (1 - phi(j-1,i)) / epi / sqrt(8)) + ...
+        
+        nablaphi = (-phi(j-1,i) * (1 - phi(j-1,i)) / epi);
+        
+        phi(j,i) = phi(j-1,i) + dt * (-VlinVcGrow * nablaphi + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
             gamma * epi^2 * (phi(j-1,i) - phi(j-1,i-1))^2 / h^2);  
         
-%         if abs(phi(j,i) - 0.5) < abs(phi(j,i-1) - 0.5)
-%             R(j) = r(i);
-%         end
     end
     
-     R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
+    R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
     
     if mod(j,200) == 0
         plot(r,phi(j,:));
@@ -93,7 +94,7 @@ end
 figure(2);
 t = linspace(1,20000,20000)* dt;
 plot(t, pi * R.^2);
-title('Volume varying with time with Sed');
+title('Volume varying with time using Vc');
 xlabel('time/s');
 ylabel('Volume');
 ylim([0.15,0.65]);

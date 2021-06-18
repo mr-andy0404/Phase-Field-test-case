@@ -1,3 +1,5 @@
+clear;
+
 %% parameters
 E = 1;      %Young's modulus
 v = 0.33;   %Poisson ratio
@@ -24,7 +26,7 @@ gamma = 10;
 
 dt = 0.0001;
 
-%variables
+%% variables
 
 %Volumetric Compression Growth
 SVcGrow = (1 - 2 * v) * Fz / (E * pi * RInitGrow^2);
@@ -45,7 +47,6 @@ VlinVcShrink = alphaVcShrink * cVcShrink - beta;
 SSedShrink = Fz^2 / (2 * E * pi^2 * RInitShrink^4);
 cSedShrink = SSedShrink / k;
 VlinSedShrink = alphaSedShrink * cSedShrink - beta;
-
 
 %% 1d Growth - Volumetric Compression
 % working
@@ -73,14 +74,16 @@ for j = 2:20000
     VlinVcGrow = alphaVcGrow * cVcGrow - beta;
     
     for i = 2:num-1
-        phi(j,i) = phi(j-1,i) + dt * (-VlinVcGrow * (-phi(j-1,i) * (1 - phi(j-1,i)) / epi) + ...
+        
+        nablaphi = (-phi(j-1,i) * (1 - phi(j-1,i)) / epi);
+        
+        phi(j,i) = phi(j-1,i) + dt * (-VlinVcGrow * nablaphi + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
             gamma * epi^2 * (phi(j-1,i) - phi(j-1,i-1))^2 / h^2);  
         
-        if abs(phi(j,i) - 0.5) < abs(phi(j,i-1) - 0.5)
-            R(j) = r(i);
-        end
     end
+    
+    R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
     
     if mod(j,200) == 0
         plot(r,phi(j,:));
