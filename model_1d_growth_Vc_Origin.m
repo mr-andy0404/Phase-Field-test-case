@@ -2,13 +2,13 @@ clear;
 
 %% parameters
 E = 1;      %Young's modulus
-v = 0.33;   %Poisson ratio
+v = 1/3;   %Poisson ratio; try v = 0.3
 
 RInitGrow = sqrt(0.2/pi);
 RInitShrink = sqrt(0.6/pi);
 
 alphaSedGrow = 0.36;
-alphaVcGrow = 0.9;
+alphaVcGrow = 0.9; %exact value should be 0.8824; alpha = 0.75
 alphaSedShrink = 0.04;
 alphaVcShrink = 0.3;
 
@@ -24,32 +24,33 @@ r = linspace(0, 2 * RInitShrink, num);
 epi = 0.005;
 gamma = 10;
 
-dt = 0.0001;
+dt = 0.0002;
 
 %% variables
 
-%Volumetric Compression Growth
-SVcGrow = (1 - 2 * v) * Fz / (E * pi * RInitGrow^2);
-cVcGrow = SVcGrow / k;
-VlinVcGrow = alphaVcGrow * cVcGrow - beta;
+% %Volumetric Compression Growth
+% SVcGrow = (1 - 2 * v) * Fz / (E * pi * RInitGrow^2);
+% cVcGrow = SVcGrow / k;
+% VlinVcGrow = alphaVcGrow * cVcGrow - beta;
+% 
+% %Strain Energy Density Growth
+% SSedGrow = Fz^2 / (2 * E * pi^2 * RInitGrow^4);
+% cSedGrow = SSedGrow / k;
+% VlinSedGrow = alphaSedGrow * cSedGrow - beta;
+% 
+% %Volumetric Compression Shrinkage
+% SVcShrink = (1 - 2 * v) * Fz / (E * pi * RInitShrink^2);
+% cVcShrink = SVcShrink / k;
+% VlinVcShrink = alphaVcShrink * cVcShrink - beta;
+% 
+% %Strain Energy Density Shrinkage
+% SSedShrink = Fz^2 / (2 * E * pi^2 * RInitShrink^4);
+% cSedShrink = SSedShrink / k;
+% VlinSedShrink = alphaSedShrink * cSedShrink - beta;
 
-%Strain Energy Density Growth
-SSedGrow = Fz^2 / (2 * E * pi^2 * RInitGrow^4);
-cSedGrow = SSedGrow / k;
-VlinSedGrow = alphaSedGrow * cSedGrow - beta;
-
-%Volumetric Compression Shrinkage
-SVcShrink = (1 - 2 * v) * Fz / (E * pi * RInitShrink^2);
-cVcShrink = SVcShrink / k;
-VlinVcShrink = alphaVcShrink * cVcShrink - beta;
-
-%Strain Energy Density Shrinkage
-SSedShrink = Fz^2 / (2 * E * pi^2 * RInitShrink^4);
-cSedShrink = SSedShrink / k;
-VlinSedShrink = alphaSedShrink * cSedShrink - beta;
-
-%% 1d Growth - Volumetric Compression
+%% 1d Growth - Strain Energy Density
 % working
+% problem with |nablaphi|
 
 phi = zeros(20000,num);
 phi(:,1) = 1;
@@ -72,19 +73,21 @@ for j = 2:20000
     SVcGrow = (1 - 2 * v) * Fz / (E * pi * R(j-1)^2);
     cVcGrow = SVcGrow / k;
     VlinVcGrow = alphaVcGrow * cVcGrow - beta;
-    
+
     for i = 2:num-1
         
-        nablaphi = (-phi(j-1,i) * (1 - phi(j-1,i)) / epi);
+        nablaphi = -2 * phi(j-1,i) * (1 - phi(j-1,i)) / sqrt(8) / epi;
         
         phi(j,i) = phi(j-1,i) + dt * (-VlinVcGrow * nablaphi + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
-            gamma * epi^2 * (phi(j-1,i) - phi(j-1,i-1))^2 / h^2);  
+            gamma * epi^2 * nablaphi^2);  
         
     end
     
-    R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
-    
+%      R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
+%      R(j) =max(r(phi(j,:) >= 0.5));
+        R(j) = min(r(phi(j,:) < 0.5));
+     
     if mod(j,200) == 0
         plot(r,phi(j,:));
     end
@@ -94,7 +97,7 @@ end
 figure(2);
 t = linspace(1,20000,20000)* dt;
 plot(t, pi * R.^2);
-title('Volume varying with time using Vc');
+title('Volume varying with time with Vc');
 xlabel('time/s');
 ylabel('Volume');
 ylim([0.15,0.65]);
