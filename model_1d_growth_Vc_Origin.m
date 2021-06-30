@@ -2,13 +2,13 @@ clear;
 
 %% parameters
 E = 1;      %Young's modulus
-v = 1/3;   %Poisson ratio; try v = 0.3
+v = 0.33;   %Poisson ratio
 
 RInitGrow = sqrt(0.2/pi);
 RInitShrink = sqrt(0.6/pi);
 
 alphaSedGrow = 0.36;
-alphaVcGrow = 0.9; %exact value should be 0.8824; alpha = 0.75
+alphaVcGrow = 0.9; %exact value should be 0.8824
 alphaSedShrink = 0.04;
 alphaVcShrink = 0.3;
 
@@ -77,16 +77,16 @@ for j = 2:20000
     for i = 2:num-1
         
         nablaphi = -2 * phi(j-1,i) * (1 - phi(j-1,i)) / sqrt(8) / epi;
+        lapphi = phi(j-1,i) * (1 - phi(j-1,i)^2) * (1 - 2 * phi(j-1,i)) / 2 / epi^2;
         
         phi(j,i) = phi(j-1,i) + dt * (-VlinVcGrow * nablaphi + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
-            gamma * epi^2 * nablaphi^2);  
+            gamma * epi^2 * lapphi);  
         
     end
     
-%      R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
-%      R(j) =max(r(phi(j,:) >= 0.5));
-        R(j) = min(r(phi(j,:) < 0.5));
+    R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
+
      
     if mod(j,200) == 0
         plot(r,phi(j,:));
