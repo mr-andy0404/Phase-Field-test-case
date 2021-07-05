@@ -71,15 +71,15 @@ for j = 2:20000
     
     %%updating velocity
     SSedGrow = Fz^2 / (2 * E * pi^2 * R(j-1)^4);
-    cSedGrow = SSedGrow / k;
+    cSedGrow = exp(sqrt(k/d)*r) + SSedGrow/k;
     VlinSedGrow = alphaSedGrow * cSedGrow - beta;
-    
+   
     for i = 2:num-1
-        
+
         nablaphi = -2 * phi(j-1,i) * (1 - phi(j-1,i)) / sqrt(8) / epi;
-        lapphi = phi(j-1,i) * (1 - phi(j-1,i)^2) * (1 - 2 * phi(j-1,i)) / 2 / epi^2;
+        lapphi = -phi(j-1,i) * (1 - phi(j-1,i)) * (1 - 2 * phi(j-1,i)) / 2 / epi^2;
         
-        phi(j,i) = phi(j-1,i) + dt * (-VlinSedGrow * nablaphi + ...
+        phi(j,i) = phi(j-1,i) + dt * (-VlinSedGrow(i) * nablaphi + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
             gamma * epi^2 * lapphi);  
         
