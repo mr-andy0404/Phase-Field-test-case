@@ -17,14 +17,14 @@ beta = 1;
 Fz = 1;
 d = 1;
 k = 1/2;
-h = 1/10000;  %minimun gird spacing
+h = 1/1280;  %minimun gird spacing
 num = fix(2 * RInitShrink / h);
 r = linspace(0, 2 * RInitShrink, num);
 
 epi = 0.005;
 gamma = 10;
 
-dt = 0.0001;
+dt = 0.001;
 
 %% variables
 
@@ -52,7 +52,7 @@ dt = 0.0001;
 % working
 % problem with |nablaphi|
 
-phi = zeros(20000,num);
+phi = zeros(2/dt,num);
 phi(:,1) = 1;
 phi(:,num) = 0;
 
@@ -63,11 +63,14 @@ hold on;
 title('\phi changing with time using Sed');
 xlabel('r');
 ylabel('\phi');
+ylim([0 1]);
 
-R = zeros(1,20000);
+R = zeros(1,2/dt);
 R(1) = RInitGrow;
+A = zeros(num-2,num-2);
+B = zeros(num-2,1);
 
-for j = 2:20000
+for j = 2:2/dt
     
     %%updating velocity
     SSedGrow = Fz^2 / (2 * E * pi^2 * R(j-1)^4);
@@ -79,22 +82,37 @@ for j = 2:20000
         nablaphi = -2 * phi(j-1,i) * (1 - phi(j-1,i)) / sqrt(8) / epi;
         lapphi = -phi(j-1,i) * (1 - phi(j-1,i)) * (1 - 2 * phi(j-1,i)) / 2 / epi^2;
         
-        phi(j,i) = phi(j-1,i) + dt * (-VlinSedGrow * nablaphi + ...
-            gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
-            gamma * epi^2 * lapphi);  
+        A(i-1,i-1) = 1 + 2 * dt * gamma * epi^2 / h^2;
+        if i < num-1
+            A(i-1,i) = - dt * gamma * epi^2 / h^2;
+        end
+        if i > 2
+            A(i-1,i-2) = - dt * gamma * epi^2 / h^2;
+        end
         
+        if i == 2
+            B(i-1) = dt * gamma * epi^2 / h^2 + phi(j-1,i) + phi(j-1,i) + ...
+                dt * (-VlinSedGrow * nablaphi + ...
+                gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i))); 
+        else
+            B(i-1) = phi(j-1,i) + dt * (-VlinSedGrow * nablaphi + ...
+            gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)));
+        end
+         
     end
+    
+    phi(j,2:num-1) = A\B;
     
      R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
     
-    if mod(j,200) == 0
+    if mod(j,dt*1e4) == 0
         plot(r,phi(j,:));
     end
     
 end
 
 figure(2);
-t = linspace(1,20000,20000)* dt;
+t = linspace(1,2/dt,2/dt)* dt;
 plot(t, pi * R.^2);
 title('Volume varying with time with Sed');
 xlabel('time/s');

@@ -24,7 +24,7 @@ r = linspace(0, 2 * RInitShrink, num);
 epi = 0.005;
 gamma = 10;
 
-dt = 0.0001;
+dt = 1e-5;
 
 %% variables
 
@@ -50,9 +50,8 @@ dt = 0.0001;
 
 %% 1d Growth - Strain Energy Density
 % working
-% problem with |nablaphi|
 
-phi = zeros(20000,num);
+phi = zeros(fix(2/dt),num);
 phi(:,1) = 1;
 phi(:,num) = -1;
 
@@ -64,10 +63,10 @@ title('\phi changing with time using Sed');
 xlabel('r');
 ylabel('\phi');
 
-R = zeros(1,20000);
+R = zeros(1,fix(2/dt));
 R(1) = RInitGrow;
 
-for j = 2:20000
+for j = 2:fix(2/dt)
     
     %%updating velocity
     SSedGrow = Fz^2 / (2 * E * pi^2 * R(j-1)^4);
@@ -76,24 +75,25 @@ for j = 2:20000
     
     for i = 2:num-1
         
-        nablaphi = 1 - phi(j-1,i)^2 / epi / sqrt(2);
+        nablaphi = (1 - phi(j-1,i)^2) / sqrt(2) / epi;
+        lapphi = (phi(j-1,i+1) - 2 * phi(j-1,i) + phi(j-1,i-1)) / h^2;
         
-        phi(j,i) = phi(j-1,i) + dt * (-VlinSedGrow * nablaphi + ...
-            gamma * phi(j-1,i) * (1 - phi(j-1,i)^2) +...
-            );  
+        phi(j,i) = phi(j-1,i) + dt * (VlinSedGrow * nablaphi + ...
+            gamma * phi(j-1,i) * (1 - phi(j-1,i)^2) + ...
+            gamma * epi^2 * lapphi); 
 
     end
     
      R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
     
-    if mod(j,200) == 0
+    if mod(j,2000) == 0
         plot(r,phi(j,:));
     end
     
 end
 
 figure(2);
-t = linspace(1,20000,20000)* dt;
+t = linspace(1,fix(2/dt),fix(2/dt))* dt;
 plot(t, pi * R.^2);
 title('Volume varying with time with Sed');
 xlabel('time/s');

@@ -19,12 +19,12 @@ d = 1;
 k = 1/2;
 h = 1/10000;  %minimun gird spacing
 num = fix(2 * RInitShrink / h);
-r = linspace(-RInitShrink, RInitShrink, num);
+r = linspace(0, 2 * RInitShrink, num);
 
 epi = 0.005;
 gamma = 10;
 
-dt = 0.0001;
+dt = 1e-5;
 
 %% variables
 
@@ -50,11 +50,11 @@ dt = 0.0001;
 
 %% 1d Growth - Volumetric Compression - Sharp Interface
 
-phi = zeros(20000,num);
+phi = zeros(fix(2/dt),num);
 phi(:,1) = 1;
 phi(:,num) = -1;
 
-phi(1,:) = - tanh((r) / sqrt(2) /epi); %Origin from -1 to 1, or change to 0 to 1?
+phi(1,:) = - tanh((r-RInitGrow) / sqrt(2) /epi); %Origin from -1 to 1, or change to 0 to 1?
 
 plot(r,phi(1,:));
 hold on;
@@ -63,10 +63,10 @@ xlabel('r');
 ylabel('\phi');
 %ylim([0 1]);
 
-R = zeros(1,20000);
+R = zeros(1,fix(2/dt));
 R(1) = RInitGrow;
 
-for j = 2:20000
+for j = 2:fix(2/dt)
     
     %%updating velocity
     SVcGrow = (1 - 2 * v) * Fz / (E * pi * R(j-1)^2);
@@ -77,24 +77,24 @@ for j = 2:20000
     for i = 2:num-1
         
         nablaphi = (1 - phi(j-1,i)^2) / sqrt(2) / epi;
-        lapphi = phi(j-1,i) * (1 - phi(j-1,i)^2) * (1 - 2 * phi(j-1,i)) / 2 / epi^2;
+        lapphi = (phi(j-1,i+1) - 2 * phi(j-1,i) + phi(j-1,i-1)) / h^2;
         
-        phi(j,i) = phi(j-1,i) + dt * (-VlinVcGrow * nablaphi + ...
+        phi(j,i) = phi(j-1,i) + dt * (VlinVcGrow * nablaphi + ...
             gamma * phi(j-1,i) * (1 - phi(j-1,i)^2) + ...
-            gamma * epi^2 * nablaphi^2);  
+            gamma * epi^2 * lapphi);  
         
     end
     
     R(j) = 0.5 * (max(r(phi(j,:) >= 0.5)) + min(r(phi(j,:) < 0.5)));
     
-    if mod(j,200) == 0
+    if mod(j,2000) == 0
         plot(r,phi(j,:));
     end
     
 end
 
 figure(2);
-t = linspace(1,20000,20000)* dt;
+t = linspace(1,fix(2/dt),fix(2/dt))* dt;
 plot(t, pi * R.^2);
 title('Volume varying with time using Vc');
 xlabel('time/s');
