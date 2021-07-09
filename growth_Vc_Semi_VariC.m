@@ -48,6 +48,12 @@ R = zeros(1,2/dt);
 R(1) = RInitGrow;
 A = zeros(num-2,num-2);
 B = zeros(num-2,1);
+CVcGrow = zeros(1,num-2);
+VVcGrow = zeros(1,num-2);
+CA = zeros(num-2,num-2);
+CB = zeros(num-2,1);
+k2 = 1e-7;
+d2 = 1e-3;
 
 for j = 2:2/dt
     
@@ -57,9 +63,54 @@ for j = 2:2/dt
     VlinVcGrow = alphaVcGrow * cVcGrow - beta;
     gradphi = -2 * phi(j-1,:) .* (1 - phi(j-1,:)) / sqrt(8) / epi;
 
-    for i = 2:num-1
+    
+    for i = 1:num-2     % define CA * c = CB
         
-%         nablaphi = -2 * phi(j-1,i) * (1 - phi(j-1,i)) / sqrt(8) / epi;
+        if i ~= 1 && i ~= num-2 % define digonal elements
+            CA(i,i) = k * phi(j-1,i+1) + k2 * (1 - phi(j-1,i+1)) +...
+                2 * (d * phi(j-1,i+1) + d2 * (1 - phi(j-1,i+1))) / h^2;
+        end
+        if i == 1 || i == num-2 % define first and last elements on digonal
+            CA(i,i) = k * phi(j-1,i+1) + k2 * (1 - phi(j-1,i+1)) +...
+                (d * phi(j-1,i+1) + d2 * (1 - phi(j-1,i+1))) / h^2;
+        end
+        
+        if i < num-2    % define upper part
+            CA(i,i+1) = - (d * phi(j-1,i+1) + d2 * (1 - phi(j-1,i+1)))/h^2;
+        end
+        if i > 1    % define lower part
+            CA(i,i-1) = - (d * phi(j-1,i+1) + d2 * (1 - phi(j-1,i+1)))/h^2;
+        end
+        
+        CB(i) = phi(j-1,i+1) * SVcGrow; % define CB matrix
+
+
+%         if i ~= 1 && i ~= num-2
+%             CA(i,i) = k + 2 * d / h^2;
+%         end
+%         if i == 1 || i == num-2
+%             CA(i,i) = k + d / h^2;
+%         end
+%         
+%         if i < num-2
+%             CA(i,i+1) = - d / h^2;
+%         end
+%         if i > 1
+%             CA(i,i-1) = - d / h^2;
+%         end
+%         
+%         CB(i) = SVcGrow;
+%         
+    end
+        
+    CVcGrow = CA\CB;
+    VVcGrow = CVcGrow * alphaVcGrow - beta;
+    plot(r(2:num-1),CVcGrow,r(2:num-1),VVcGrow);
+    legend("phi","concentration","velocity");
+    
+    for i = 2:num-1 % define A * phi = B
+        
+        %nablaphi = -2 * phi(j-1,i) * (1 - phi(j-1,i)) / sqrt(8) / epi;
         
         A(i-1,i-1) = 1 + 2 * dt * gamma * epi^2 / h^2;
         if i < num-1
@@ -71,10 +122,10 @@ for j = 2:2/dt
         
         if i == 2
             B(i-1) = dt * gamma * epi^2 / h^2 + phi(j-1,i) + ...
-                dt * (-VlinVcGrow * gradphi(i) + ...
+                dt * (-VVcGrow(i-1) * gradphi(i) + ...
                 gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i))); 
         else
-            B(i-1) = phi(j-1,i) + dt * (-VlinVcGrow * gradphi(i) + ...
+            B(i-1) = phi(j-1,i) + dt * (-VVcGrow(i-1) * gradphi(i) + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)));
         end
          

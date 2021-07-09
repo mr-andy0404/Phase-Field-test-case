@@ -63,11 +63,12 @@ hold on;
 title('\phi changing with time using Sed');
 xlabel('r');
 ylabel('\phi');
-ylim([0 1]);
+%ylim([0 1]);
 
 R = zeros(1,2/dt);
 R(1) = RInitGrow;
-A = zeros(num-2,num-2);
+
+A = zeros(num-2,num-2); % Coeficient matrix, A * Phi(t+1) = B
 B = zeros(num-2,1);
 
 for j = 2:2/dt
@@ -82,16 +83,18 @@ for j = 2:2/dt
         nablaphi = -2 * phi(j-1,i) * (1 - phi(j-1,i)) / sqrt(8) / epi;
         lapphi = -phi(j-1,i) * (1 - phi(j-1,i)) * (1 - 2 * phi(j-1,i)) / 2 / epi^2;
         
-        A(i-1,i-1) = 1 + 2 * dt * gamma * epi^2 / h^2;
-        if i < num-1
+        A(i-1,i-1) = 1 + 2 * dt * gamma * epi^2 / h^2; % define the digonal element
+        
+        if i < num-1    % define the upper part
             A(i-1,i) = - dt * gamma * epi^2 / h^2;
         end
-        if i > 2
+        if i > 2    % define the lower part
             A(i-1,i-2) = - dt * gamma * epi^2 / h^2;
         end
         
+        
         if i == 2
-            B(i-1) = dt * gamma * epi^2 / h^2 + phi(j-1,i) + phi(j-1,i) + ...
+            B(i-1) = dt * gamma * epi^2 / h^2 + phi(j-1,i) + ...
                 dt * (-VlinSedGrow * nablaphi + ...
                 gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i))); 
         else

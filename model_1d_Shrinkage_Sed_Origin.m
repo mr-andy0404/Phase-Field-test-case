@@ -75,10 +75,11 @@ for j = 2:20000
     for i = 2:num-1
         
         nablaphi = -2 * phi(j-1,i) * (1 - phi(j-1,i)) / sqrt(8) / epi;
+        lapphi = -phi(j-1,i) * (1 - phi(j-1,i)) * (1 - 2 * phi(j-1,i)) / 2 / epi^2;
         
         phi(j,i) = phi(j-1,i) + dt * (-VlinSedShrink * nablaphi + ...
             gamma * (-phi(j-1,i)^3 + 1.5 * phi(j-1,i)^2 - 0.5 * phi(j-1,i)) + ...
-            gamma * epi^2 * nablaphi^2);  
+            gamma * epi^2 * lapphi);  
         
     end
     
