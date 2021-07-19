@@ -1,3 +1,4 @@
+
 clear;
 
 %% parameters
@@ -35,7 +36,7 @@ phi(:,1) = 1;
 phi(:,num) = 0;
 gradphi = zeros(1,num);
 
-phi(1,:) = 0.5 * (1 - tanh((r- 2 * RInitGrow)/(sqrt(8) * epi)));
+phi(1,:) = 0.5 * (1 - tanh((r-RInitGrow)/(sqrt(8) * epi)));
 
 plot(r,phi(1,:));
 hold on;
@@ -52,7 +53,7 @@ CVcGrow = zeros(1,num-2);
 VVcGrow = zeros(1,num-2);
 CA = zeros(num-2,num-2);
 CB = zeros(num-2,1);
-k2 = 1000;
+k2 = 1e-7;
 d2 = 1e-3;
 
 for j = 2:2/dt
@@ -64,28 +65,30 @@ for j = 2:2/dt
     gradphi = -2 * phi(j-1,:) .* (1 - phi(j-1,:)) / sqrt(8) / epi;
 
     
+        % k * phi * c - d * grad(phi * grad(c)) = phi * S
     for i = 1:num-2     % define CA * c = CB
         
-        if i ~= 1 && i ~= num-2 % define digonal elements
-            CA(i,i) = k * phi(j-1,i+1) + k2 * (1 - phi(j-1,i+1)) +...
-                2 * (d * phi(j-1,i+1) + d2 * (1 - phi(j-1,i+1))) / h^2;
+        if i == 1
+            CA(i,i) = k * phi(j-1,i+1) + d * gradphi(j-1,i+1) / h + ...
+                d * phi(j-1,i+1) / h^2;
+        elseif i == num-2
+            CA(i,i) = k * phi(j-1,i+1) + d * phi(j-1,i+1)/h^2;
         else
-            CA(i,i) = k * phi(j-1,i+1) + k2 * (1 - phi(j-1,i+1)) +...
-                (d * phi(j-1,i+1) + d2 * (1 - phi(j-1,i+1))) / h^2;
+            CA(i,i) = k * phi(j-1,i+1) + d * gradphi(j-1,i+1) / h + ...
+                2 * d * phi(j-1,i+1) / h^2;
         end
         
-        if i < num-2    % define upper part
-            CA(i,i+1) = - (d * phi(j-1,i+1) + d2 * (1 - phi(j-1,i+1)))/h^2;
+        if i < num-2
+            CA(i,i+1) = - d * gradphi(j-1,i+1) / h - d * phi(j-1,i+1) / h^2;
         end
-        if i > 1    % define lower part
-            CA(i,i-1) = - (d * phi(j-1,i+1) + d2 * (1 - phi(j-1,i+1)))/h^2;
+        if i > 1
+            CA(i,i-1) = - d * phi(j-1,i+1) / h^2;
         end
         
-
-        CB(i) = phi(j-1,i+1) * SVcGrow; % define CB matrix
-
-         
+        CB(i) = phi(j-1,i+1) * SVcGrow;
+        
     end
+
         
     CVcGrow = CA\CB;
     VVcGrow = CVcGrow * alphaVcGrow - beta;

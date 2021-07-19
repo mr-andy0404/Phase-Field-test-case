@@ -59,7 +59,6 @@ for j = 2:2/dt
 
     for i = 2:num-1
         
-%         nablaphi = -2 * phi(j-1,i) * (1 - phi(j-1,i)) / sqrt(8) / epi;
         
         A(i-1,i-1) = 1 + 2 * dt * gamma * epi^2 / h^2;
         if i < num-1

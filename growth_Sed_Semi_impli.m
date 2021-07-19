@@ -26,31 +26,8 @@ gamma = 10;
 
 dt = 0.001;
 
-%% variables
-
-% %Volumetric Compression Growth
-% SVcGrow = (1 - 2 * v) * Fz / (E * pi * RInitGrow^2);
-% cVcGrow = SVcGrow / k;
-% VlinVcGrow = alphaVcGrow * cVcGrow - beta;
-% 
-% %Strain Energy Density Growth
-% SSedGrow = Fz^2 / (2 * E * pi^2 * RInitGrow^4);
-% cSedGrow = SSedGrow / k;
-% VlinSedGrow = alphaSedGrow * cSedGrow - beta;
-% 
-% %Volumetric Compression Shrinkage
-% SVcShrink = (1 - 2 * v) * Fz / (E * pi * RInitShrink^2);
-% cVcShrink = SVcShrink / k;
-% VlinVcShrink = alphaVcShrink * cVcShrink - beta;
-% 
-% %Strain Energy Density Shrinkage
-% SSedShrink = Fz^2 / (2 * E * pi^2 * RInitShrink^4);
-% cSedShrink = SSedShrink / k;
-% VlinSedShrink = alphaSedShrink * cSedShrink - beta;
 
 %% 1d Growth - Strain Energy Density
-% working
-% problem with |nablaphi|
 
 phi = zeros(2/dt,num);
 phi(:,1) = 1;
